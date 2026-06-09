@@ -81,8 +81,3 @@ Create all named ranges in the spreadsheet pointing to the correct
 Settings sheet ranges.
 
 Print the spreadsheet ID and URL to the log when complete.
-
-## Notes
-- Named ranges must be created in the spreadsheet, not just referenced in script
-- Stage Entry Date (col M) is script-managed — do not expose to users as editable
-- Days In Stage (col N) should be a formula: =IF(M{row}="","",TODAY()-M{row})
