@@ -1,10 +1,10 @@
-# Sprint 2: Sample Data Dashboard
+# Sprint 2 - Sample Data Dashboard
 
-## What gets built: 15 realistic sample company records spread across all six stages, 
+## What this builds: 15 realistic sample company records spread across all six stages, 
 plus the full Dashboard sheet with live formulas, 
 pipeline value by stage, company counts, and overdue flags.
 
-## PROMPT
+## Prompt
 
 I have a Google Sheets CRM workbook with the structure below. 
 Spreadsheet ID: [PASTE ID FROM SPRINT 1 LOG]
