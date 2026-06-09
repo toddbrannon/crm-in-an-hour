@@ -1,81 +1,77 @@
-# Sprint 3 — Apps Script Sidebar
+# Sprint 3 — Apps Script Sidebar Form
 
 ## What this builds
-A fully functional Apps Script sidebar with Add and Edit modes,
-company search and select, color-coded stage dropdown, duplicate
-detection, and auto-populated timestamps on save.
+The full sidebar HTML form for adding and editing company records, 
+with company search/select to load existing records.
 
 ## Prompt
 
-You are building Sprint 3 of a Google Sheets CRM for a boutique
-sales recruiting firm. The workbook has the following sheets:
-Dashboard, Companies, Settings, Archive.
+I have a Google Sheets CRM workbook. 
+Spreadsheet ID: [PASTE ID]
 
-COMPANIES sheet columns:
-A: Company Name, B: Primary Contact Name, C: Contact Email,
-D: Website, E: LinkedIn Profile, F: Pipeline Stage,
-G: Potential Value, H: Deal Structure, I: Roles Needed,
-J: Assigned Owner, K: Lead Source, L: Date Created,
-M: Stage Entry Date, N: Days In Stage, O: Date of Last Interaction,
-P: Next Action, Q: Next Action Due Date, R: Notes
+Build a complete Apps Script sidebar for this CRM. 
+The sidebar should handle both ADDING new company records 
+and EDITING existing ones.
 
-Named ranges in Settings sheet:
-- STAGE_LIST → Settings!A2:A7
-- LEAD_SOURCES → Settings!B2:B6
-- OWNERS → Settings!C2:C2
+SIDEBAR BEHAVIOR:
 
-Build a complete Apps Script sidebar with two modes:
+On open: show a mode selector at the top — 
+  "Add New Company" | "Edit Existing Company"
 
-ADD MODE:
-- Form fields for all user-editable columns (skip L, M, N — script manages these)
-- Validate Company Name and Pipeline Stage as required before saving
-- Check for duplicate Company Name — warn user but allow override
-- On save: write all fields to next empty row in Companies sheet
-- Auto-populate Date Created (col L) with today's date
-- Auto-populate Stage Entry Date (col M) with today's date
-- Show success message and clear form after save
-
-EDIT MODE:
-- Dropdown at top of sidebar populated from column A of Companies sheet
-- When company selected: load all field values into form automatically
-- On save: update all editable fields in the matching row
-- If Pipeline Stage has changed: reset Stage Entry Date (col M) to today
-- Do NOT overwrite Date Created (col L)
-- Show success message after save
+When EDIT mode is selected: show a searchable dropdown 
+  that populates from column A of the Companies sheet. 
+  When a company is selected, load all its field values 
+  into the form fields automatically.
 
 FORM FIELDS (in this order):
 1. Company Name (text, required)
 2. Primary Contact Name (text)
-3. Contact Email (email)
+3. Contact Email (text)
 4. Website (text)
 5. LinkedIn Profile (text)
-6. Pipeline Stage (dropdown from STAGE_LIST, required)
+6. Pipeline Stage (dropdown — from STAGE_LIST named range, required)
 7. Potential Value (number)
 8. Deal Structure (text)
 9. Roles Needed (text)
-10. Assigned Owner (dropdown from OWNERS)
-11. Lead Source (dropdown from LEAD_SOURCES)
+10. Assigned Owner (dropdown — from OWNERS named range)
+11. Lead Source (dropdown — from LEAD_SOURCES named range)
 12. Date of Last Interaction (date)
 13. Next Action (text)
 14. Next Action Due Date (date)
 15. Notes (textarea, 4 rows)
 
+SAVE BEHAVIOR — ADD MODE:
+- Validate Company Name and Pipeline Stage are not empty
+- Check for duplicate company name — if found, warn but allow override
+- Write all fields to the next empty row in Companies sheet
+- Auto-populate Date Created (column L) with today's date
+- Auto-populate Stage Entry Date (column M) with today's date
+- Show success message, clear form
+
+SAVE BEHAVIOR — EDIT MODE:
+- Find the row by Company Name match
+- Update all editable fields
+- If Pipeline Stage has changed: update Stage Entry Date (column M) 
+  to today's date
+- Do NOT overwrite Date Created (column L)
+- Show success message
+
 DESIGN:
+- Clean, minimal styling
 - Navy header (#0D1F3C) with white text "Pipeline CRM"
-- Mode toggle at top: Add New | Edit Existing
-- Stage dropdown options color-coded to match sheet:
+- Use the stage colors for the Pipeline Stage dropdown options:
   Booked Call → #E3F2FD
   1st Call Completed → #F3E5F5
   Middle of Funnel → #FFF8E1
   Currently Working → #E8F5E9
   Deal Lost → #FFEBEE
   Past Client → #F5F5F5
-- Primary save button: #1E6FBF
-- Success messages in green, errors in red
-- Clean minimal styling, sidebar-width friendly
+- Primary action button in #1E6FBF
+- Error messages in red, success messages in green
+- Mobile-friendly sizing (sidebar is narrow)
 
-Create openSidebar() function that opens this sidebar.
-Wire it to the custom menu item "Add / Edit Company".
+Create the openSidebar() function that opens this sidebar, 
+and wire it to the custom menu item built in Sprint 1.
 
 ## Notes
 - Sidebar is HTML service — create as a separate Sidebar.html file
