@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Arial, sans-serif; font-size: 12px; color: #1f2937; background: #f9fafb; }
+ 
+  .header {
+    background: #0D1F3C; color: #fff;
+    padding: 12px 14px; font-size: 14px; font-weight: bold;
+    position: sticky; top: 0; z-index: 10;
+  }
+  .header span { color: #90CAF9; font-size: 11px; font-weight: normal; display: block; margin-top: 2px; }
+ 
+  .mode-bar {
+    display: flex; background: #e8f1fa; border-bottom: 2px solid #1E6FBF;
+  }
+  .mode-btn {
+    flex: 1; padding: 8px; border: none; background: transparent;
+    font-size: 11px; font-weight: bold; color: #1E6FBF; cursor: pointer;
+  }
+  .mode-btn.active { background: #1E6FBF; color: #fff; }
+ 
+  .form-body { padding: 10px 12px; }
+ 
+  .search-block { margin-bottom: 10px; display: none; }
+  .search-block.visible { display: block; }
+ 
+  label { display: block; font-size: 11px; font-weight: bold; color: #374151; margin-bottom: 3px; margin-top: 8px; }
+  input, select, textarea {
+    width: 100%; padding: 6px 8px; border: 1px solid #d1d5db;
+    border-radius: 4px; font-size: 12px; color: #1f2937; background: #fff;
+  }
+  input:focus, select:focus, textarea:focus {
+    outline: none; border-color: #1E6FBF; box-shadow: 0 0 0 2px #bfdbfe;
+  }
+  textarea { resize: vertical; min-height: 60px; }
+ 
+  select[name="stage"] option[value="Booked Call"]                    { background: #E3F2FD; }
+  select[name="stage"] option[value="1st Call Completed"]             { background: #F3E5F5; }
+  select[name="stage"] option[value="Middle of Funnel (Giving Value)"]{ background: #FFF8E1; }
+  select[name="stage"] option[value="Currently Working (Deal Won)"]   { background: #E8F5E9; }
+  select[name="stage"] option[value="Deal Lost"]                       { background: #FFEBEE; }
+  select[name="stage"] option[value="Past Client"]                     { background: #F5F5F5; }
+ 
+  .required::after { content: ' *'; color: #C62828; }
+ 
+  .divider { border: none; border-top: 1px solid #e5e7eb; margin: 10px 0 2px; }
+ 
+  .section-label {
+    font-size: 10px; font-weight: bold; color: #6b7280;
+    text-transform: uppercase; letter-spacing: 0.5px;
+    margin-top: 12px; margin-bottom: 4px;
+  }
+ 
+  .btn-save {
+    width: 100%; margin-top: 14px; padding: 9px;
+    background: #1E6FBF; color: #fff; border: none;
+    border-radius: 4px; font-size: 13px; font-weight: bold;
+    cursor: pointer;
+  }
+  .btn-save:hover { background: #1558a0; }
+  .btn-save:disabled { background: #9ca3af; cursor: not-allowed; }
+ 
+  .msg { margin-top: 8px; padding: 7px 10px; border-radius: 4px; font-size: 11px; display: none; }
+  .msg.success { background: #E8F5E9; color: #2E7D32; border: 1px solid #a5d6a7; display: block; }
+  .msg.error   { background: #FFEBEE; color: #C62828; border: 1px solid #ef9a9a; display: block; }
+ 
+  .loading { text-align: center; padding: 20px; color: #6b7280; font-size: 11px; }
+</style>
+</head>
+<body>
+ 
+<div class="header">
+  Pipeline CRM
+  <span id="mode-label">Add a new company or edit existing</span>
+</div>
+ 
+<div class="mode-bar">
+  <button class="mode-btn active" id="btn-add" onclick="setMode('add')">＋ Add New</button>
+  <button class="mode-btn" id="btn-edit" onclick="setMode('edit')">✎ Edit Existing</button>
+</div>
+ 
+<div class="form-body">
+ 
+  <!-- Edit mode: company search -->
+  <div class="search-block" id="search-block">
+    <label>Select company to edit</label>
+    <select id="company-select" onchange="loadCompany(this.value)">
+      <option value="">— choose a company —</option>
+    </select>
+  </div>
+ 
+  <div id="form-fields" style="display:none">
+ 
+    <div class="section-label">Company Info</div>
+ 
+    <label class="required">Company Name</label>
+    <input type="text" id="companyName" placeholder="Acme Corp">
+ 
+    <label>Primary Contact</label>
+    <input type="text" id="contactName" placeholder="Jane Smith">
+ 
+    <label>Contact Email</label>
+    <input type="email" id="email" placeholder="jane@acmecorp.com">
+ 
+    <label>Website</label>
+    <input type="text" id="website" placeholder="acmecorp.com">
+ 
+    <label>LinkedIn Profile</label>
+    <input type="text" id="linkedin" placeholder="linkedin.com/in/...">
+ 
+    <hr class="divider">
+    <div class="section-label">Deal Details</div>
+ 
+    <label class="required">Pipeline Stage</label>
+    <select id="stage" name="stage">
+      <option value="">— select stage —</option>
+    </select>
+ 
+    <label>Potential Value ($)</label>
+    <input type="number" id="value" placeholder="25000">
+ 
+    <label>Deal Structure</label>
+    <input type="text" id="dealStructure" placeholder="e.g. Contingency 20%">
+ 
+    <label>Roles Needed</label>
+    <input type="text" id="rolesNeeded" placeholder="e.g. VP of Sales">
+ 
+    <hr class="divider">
+    <div class="section-label">Tracking</div>
+ 
+    <label>Assigned Owner</label>
+    <select id="owner"></select>
+ 
+    <label>Lead Source</label>
+    <select id="leadSource">
+      <option value="">— select source —</option>
+    </select>
+ 
+    <label>Date of Last Interaction</label>
+    <input type="date" id="lastInteraction">
+ 
+    <label>Next Action</label>
+    <input type="text" id="nextAction" placeholder="e.g. Send proposal">
+ 
+    <label>Next Action Due Date</label>
+    <input type="date" id="nextActionDue">
+ 
+    <hr class="divider">
+    <div class="section-label">Notes</div>
+ 
+    <label>Notes</label>
+    <textarea id="notes" placeholder="Anything worth remembering about this company..."></textarea>
+ 
+    <button class="btn-save" id="btn-save" onclick="saveRecord()">Save Company</button>
+    <div class="msg" id="msg"></div>
+ 
+  </div>
+ 
+  <div class="loading" id="loading">Loading...</div>
+ 
+</div>
+ 
+<script>
+  let currentMode = 'add';
+  let originalName = '';
+  let dropdowns = {};
+ 
+  // Init
+  google.script.run.withSuccessHandler(function(vals) {
+    dropdowns = vals;
+    populateDropdowns();
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('form-fields').style.display = 'block';
+  }).getDropdownValues();
+ 
+  function populateDropdowns() {
+    const stage = document.getElementById('stage');
+    dropdowns.stages.forEach(s => {
+      const o = document.createElement('option');
+      o.value = s; o.text = s;
+      stage.appendChild(o);
+    });
+ 
+    const owner = document.getElementById('owner');
+    dropdowns.owners.forEach(o => {
+      const opt = document.createElement('option');
+      opt.value = o; opt.text = o;
+      owner.appendChild(opt);
+    });
+ 
+    const source = document.getElementById('leadSource');
+    dropdowns.sources.forEach(s => {
+      const o = document.createElement('option');
+      o.value = s; o.text = s;
+      source.appendChild(o);
+    });
+  }
+ 
+  function setMode(mode) {
+    currentMode = mode;
+    document.getElementById('btn-add').className = 'mode-btn' + (mode === 'add' ? ' active' : '');
+    document.getElementById('btn-edit').className = 'mode-btn' + (mode === 'edit' ? ' active' : '');
+    document.getElementById('search-block').className = 'search-block' + (mode === 'edit' ? ' visible' : '');
+    document.getElementById('mode-label').textContent = mode === 'add' ? 'Add a new company' : 'Edit an existing company';
+    document.getElementById('companyName').readOnly = mode === 'edit';
+    document.getElementById('companyName').style.background = mode === 'edit' ? '#f3f4f6' : '#fff';
+    clearMsg();
+ 
+    if (mode === 'edit') {
+      // Load company list
+      google.script.run.withSuccessHandler(function(list) {
+        const sel = document.getElementById('company-select');
+        sel.innerHTML = '<option value="">— choose a company —</option>';
+        list.forEach(name => {
+          const o = document.createElement('option');
+          o.value = name; o.text = name;
+          sel.appendChild(o);
+        });
+      }).getCompanyList();
+      clearForm();
+    } else {
+      clearForm();
+    }
+  }
+ 
+  function loadCompany(name) {
+    if (!name) { clearForm(); return; }
+    document.getElementById('loading').style.display = 'block';
+    document.getElementById('form-fields').style.display = 'none';
+    google.script.run.withSuccessHandler(function(data) {
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('form-fields').style.display = 'block';
+      if (!data) { showMsg('Company not found.', 'error'); return; }
+      originalName = data.companyName;
+      document.getElementById('companyName').value = data.companyName;
+      document.getElementById('contactName').value = data.contactName;
+      document.getElementById('email').value = data.email;
+      document.getElementById('website').value = data.website;
+      document.getElementById('linkedin').value = data.linkedin;
+      document.getElementById('stage').value = data.stage;
+      document.getElementById('value').value = data.value;
+      document.getElementById('dealStructure').value = data.dealStructure;
+      document.getElementById('rolesNeeded').value = data.rolesNeeded;
+      document.getElementById('owner').value = data.owner;
+      document.getElementById('leadSource').value = data.leadSource;
+      document.getElementById('lastInteraction').value = data.lastInteraction;
+      document.getElementById('nextAction').value = data.nextAction;
+      document.getElementById('nextActionDue').value = data.nextActionDue;
+      document.getElementById('notes').value = data.notes;
+    }).getCompanyData(name);
+  }
+ 
+  function saveRecord() {
+    const companyName = document.getElementById('companyName').value.trim();
+    const stage = document.getElementById('stage').value;
+    if (!companyName) { showMsg('Company Name is required.', 'error'); return; }
+    if (!stage) { showMsg('Pipeline Stage is required.', 'error'); return; }
+ 
+    const btn = document.getElementById('btn-save');
+    btn.disabled = true;
+    btn.textContent = 'Saving...';
+ 
+    const formData = {
+      mode: currentMode,
+      originalName: originalName,
+      companyName, stage,
+      contactName: document.getElementById('contactName').value,
+      email: document.getElementById('email').value,
+      website: document.getElementById('website').value,
+      linkedin: document.getElementById('linkedin').value,
+      value: document.getElementById('value').value,
+      dealStructure: document.getElementById('dealStructure').value,
+      rolesNeeded: document.getElementById('rolesNeeded').value,
+      owner: document.getElementById('owner').value,
+      leadSource: document.getElementById('leadSource').value,
+      lastInteraction: document.getElementById('lastInteraction').value,
+      nextAction: document.getElementById('nextAction').value,
+      nextActionDue: document.getElementById('nextActionDue').value,
+      notes: document.getElementById('notes').value,
+    };
+ 
+    google.script.run
+      .withSuccessHandler(function(result) {
+        btn.disabled = false;
+        btn.textContent = 'Save Company';
+        if (result.success) {
+          showMsg(result.message, 'success');
+          if (currentMode === 'add') clearForm();
+        } else {
+          showMsg(result.message, 'error');
+        }
+      })
+      .withFailureHandler(function(err) {
+        btn.disabled = false;
+        btn.textContent = 'Save Company';
+        showMsg('Error: ' + err.message, 'error');
+      })
+      .saveRecord(formData);
+  }
+ 
+  function clearForm() {
+    ['companyName','contactName','email','website','linkedin',
+     'value','dealStructure','rolesNeeded','lastInteraction',
+     'nextAction','nextActionDue','notes'].forEach(id => {
+      document.getElementById(id).value = '';
+    });
+    document.getElementById('stage').value = '';
+    document.getElementById('leadSource').value = '';
+    originalName = '';
+    clearMsg();
+  }
+ 
+  function showMsg(text, type) {
+    const el = document.getElementById('msg');
+    el.textContent = text;
+    el.className = 'msg ' + type;
+  }
+  function clearMsg() {
+    document.getElementById('msg').className = 'msg';
+  }
+</script>
+</body>
+</html>
