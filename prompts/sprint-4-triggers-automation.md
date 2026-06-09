@@ -1,87 +1,63 @@
-# Sprint 4 — Triggers & Automation
+# Sprint 4 — Triggers & Automation: onEdit Trigger & Overdue Highlighting
 
 ## What this builds
-An installable onEdit trigger that manages stage timestamps automatically,
-overdue row highlighting on the Companies sheet, an archive function,
-and a dashboard refresh utility.
+The automatic stage timestamp logic, Days In Stage formula locked in, overdue row highlighting on the Companies sheet, and the refreshDashboard function.
 
 ## Prompt
 
-You are building Sprint 4 of a Google Sheets CRM for a boutique
-sales recruiting firm. The workbook has the following sheets:
-Dashboard, Companies, Settings, Archive.
+I have a Google Sheets CRM workbook.
+Spreadsheet ID: [PASTE ID]
 
-COMPANIES sheet columns:
-A: Company Name, B: Primary Contact Name, C: Contact Email,
-D: Website, E: LinkedIn Profile, F: Pipeline Stage,
-G: Potential Value, H: Deal Structure, I: Roles Needed,
-J: Assigned Owner, K: Lead Source, L: Date Created,
-M: Stage Entry Date, N: Days In Stage, O: Date of Last Interaction,
-P: Next Action, Q: Next Action Due Date, R: Notes
+Add the following Apps Script functions:
 
-Build the following four functions:
+1. ON EDIT TRIGGER — createOnEditTrigger()
+Create an installable onEdit trigger (not simple) that fires 
+when any cell in the Companies sheet is edited.
 
-1. ONEDIT TRIGGER — installOnEditTrigger()
-Create an installable onEdit trigger (not a simple trigger) that
-fires when any cell in the Companies sheet is edited.
+When the trigger fires:
+- Check if the edited cell is in column F (Pipeline Stage)
+- If yes: write today's date into column M (Stage Entry Date) 
+  of the same row
+- Write a formula into column N (Days In Stage) of the same row:
+  =IF(M{row}="","",TODAY()-M{row})
+- Also update column O (Date of Last Interaction) with today's date
 
-When triggered:
-- Check if edited cell is in column F (Pipeline Stage)
-- If yes:
-  - Write today's date to column M (Stage Entry Date) same row
-  - Write formula to column N (Days In Stage): =IF(M{row}="","",TODAY()-M{row})
-  - Write today's date to column O (Date of Last Interaction) same row
-  - Apply mm/dd/yyyy format to columns M and O
+2. DAYS IN STAGE FORMULA — fixDaysInStageFormulas()
+Write the Days In Stage formula into column N for all existing 
+rows that have data in column M but are missing the formula in N.
+Formula: =IF(M{row}="","",TODAY()-M{row})
+Run this once on all existing sample data rows.
 
-Remove any existing triggers named onStageChange before creating
-a new one to prevent duplicates.
-
-2. OVERDUE HIGHLIGHTING — highlightOverdueRows()
-Apply conditional formatting rules to the Companies sheet:
-
-Rule 1 — entire row:
-- When column Q (Next Action Due Date) is not empty
-  AND column Q < today
-  AND column F is not "Deal Lost"
-  AND column F is not "Past Client"
-- Apply background #FFF8E1, font color #7B5E00
-- Range: A2:R200
-
-Rule 2 — column Q only:
-- Same conditions as Rule 1
-- Apply background #FFECB3, font color #C62828, bold
-- Range: Q2:Q200
-
-Clear all existing conditional format rules before applying new ones
-to avoid stacking duplicates on repeat runs.
-
-3. ARCHIVE FUNCTION — archiveRecord()
-- Get the active row in the Companies sheet
-- If active row is less than 2, show alert: "Please click a company row first"
-- Show confirmation dialog with company name before archiving
-- If confirmed:
-  - Copy entire row (columns A:R) to next empty row in Archive sheet
-  - Write today's date to column S of Archive row (Archived On)
-  - Delete the row from Companies sheet
-  - Show toast: "[Company Name] archived"
+3. OVERDUE HIGHLIGHTING — highlightOverdueRows()
+Apply conditional formatting to the Companies sheet:
+- If column Q (Next Action Due Date) is not empty AND 
+  is less than today: highlight the entire row background #FFF3E0
+- If column Q is not empty AND is less than today AND 
+  Pipeline Stage is not Deal Lost or Past Client: 
+  make column Q text bold and red (#C62828)
 
 4. REFRESH DASHBOARD — refreshDashboard()
-- Update the last-refreshed timestamp on the Dashboard sheet
-- Target cell: H3 (or wherever the timestamp lives in your build)
-- Formula: ="Last updated: "&TEXT(NOW(),"mmm d, yyyy h:mm am/pm")
-- Show toast notification: "Dashboard refreshed ✓"
+A function that:
+- Recalculates all formulas on Dashboard sheet
+- Updates the "Last updated" timestamp in Dashboard!H3
+- Shows a toast notification "Dashboard refreshed"
 
-AFTER writing all functions:
-- Run installOnEditTrigger() immediately
-- Run highlightOverdueRows() immediately so existing sample data
-  shows correct formatting without requiring a manual trigger
+5. ARCHIVE RECORD — archiveRecord()
+A function that:
+- Gets the active row in Companies sheet
+- Copies the entire row to the Archive sheet 
+  (appending to next empty row)
+- Adds a timestamp in an extra column on Archive 
+  (column S: "Archived On")
+- Deletes the row from Companies sheet
+- Shows confirmation toast
 
-Wire archiveRecord() and refreshDashboard() to the existing
-custom menu under "Pipeline CRM".
+Wire refreshDashboard and archiveRecord to the 
+custom menu items from Sprint 1.
 
-## Notes
-- Use installable trigger (ScriptApp.newTrigger), not simple onEdit
-- Simple onEdit triggers cannot write to other cells reliably
+After writing all functions, run fixDaysInStageFormulas() 
+and highlightOverdueRows() immediately so the 
+sample data looks correct.
 - The trigger handler function should be named onStageChange
 - highlightOverdueRows() uses whenFormulaSatisfied() with absolute
   column references ($F2, $Q2) so rules evaluate correctly per row
